@@ -1,9 +1,6 @@
 // config/database.js (com GridFS)
 import mongoose from 'mongoose';
 import { GridFSBucket } from 'mongodb';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 // Variáveis globais para GridFS
 let gfs;
@@ -11,11 +8,11 @@ let gridFSBucket;
 
 const connectDB = async () => {
   try {
-    if (!process.env.MONGODB_URI) {
+    if (!config.database.mongodbUri) {
       throw new Error('❌ MONGODB_URI não definida no arquivo .env');
     }
 
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+    const conn = await mongoose.connect(config.database.mongodbUri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
