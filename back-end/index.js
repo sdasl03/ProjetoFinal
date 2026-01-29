@@ -3,11 +3,11 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import connectDB from './config/database.js';
-import config, { isProduction } from './config/env.js';
+import connectDB from './src/config/database.js';
+import config, { isProduction } from './src/config/env.js';
 
 // Importar rotas (exemplo)
-import authRoutes from './routes/auth.routes.js';
+//import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import proposalRoutes from './routes/proposal.routes.js';
 
@@ -34,7 +34,7 @@ connectDB().then(() => {
 });
 
 // Rotas
-app.use('/api/auth', authRoutes);
+//app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/proposals', proposalRoutes);
 
