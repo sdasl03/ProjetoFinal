@@ -1,0 +1,8 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#f8f9fa"/>
+  <circle cx="200" cy="150" r="80" fill="#007bff" opacity="0.1"/>
+  <circle cx="180" cy="130" r="20" fill="#007bff" opacity="0.3"/>
+  <circle cx="220" cy="130" r="20" fill="#007bff" opacity="0.3"/>
+  <rect x="170" y="170" width="60" height="30" rx="15" fill="#007bff" opacity="0.3"/>
+  <text x="200" y="190" text-anchor="middle" fill="#6c757d" font-family="Arial, sans-serif" font-size="14">Hero Illustration</text>
+</svg>
