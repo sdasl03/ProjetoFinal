@@ -17,6 +17,8 @@ import {
   fileRoutes 
 } from './src/routes/index.js';
 
+import dotenv from 'dotenv';
+dotenv.config();
 // Inicializar app
 const app = express();
 const PORT = config.server.port;

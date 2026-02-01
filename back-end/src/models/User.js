@@ -1,4 +1,3 @@
-// models/User.js
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import validator from 'validator';
@@ -8,8 +7,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Nome completo é obrigatório'],
     trim: true,
-    minlength: [3, 'Nome deve ter pelo menos 3 caracteres'],
-    maxlength: [100, 'Nome não pode exceder 100 caracteres'],
   },
   
   email: {
@@ -30,28 +27,91 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Tipo de utilizador é obrigatório'],
   },
   
-  // ... resto do schema conforme sua classe
+  department: {
+    type: String,
+    required: [true, 'Departamento é obrigatório'],
+    trim: true,
+  },
+  
+  employee_number: {
+    type: String,
+    trim: true,
+    sparse: true,  
+    unique: true,  
+  },
+  
+  student_number: {
+    type: String,
+    trim: true,
+    sparse: true,  
+    unique: true, 
+  },
+  
+  password: {
+    type: String,
+    required: [true, 'Password é obrigatória'],
+    minlength: [8, 'Password deve ter pelo menos 8 caracteres'],
+  },
+  
+  password_changed_at: {
+    type: Date,
+  },
+  
+  active: {
+    type: Boolean,
+    default: true,
+  },
+  
+  last_login: {
+    type: Date,
+  },
+  
+}, {
+  timestamps: true,
 });
 
-// Método para comparar passwords
-userSchema.methods.comparePassword = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.auth_password_hash);
-};
-
-// Middleware para hash da password antes de salvar
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('auth_password_hash')) return next();
+// ==================== MIDDLEWARES ====================
+userSchema.pre('save', async function() {
+  // Only hash if password is modified
+  if (!this.isModified('password')) {
+    return;
+  }
   
   try {
     const salt = await bcrypt.genSalt(10);
-    this.auth_password_hash = await bcrypt.hash(this.auth_password_hash, salt);
-    this.auth_password_changed_at = Date.now();
-    next();
+    this.password = await bcrypt.hash(this.password, salt);
+    this.password_changed_at = Date.now();
   } catch (error) {
-    next(error);
+    console.error('Password hashing error:', error);
+    throw error;
   }
 });
 
+// ==================== METHODS ====================
+
+// Compare password method
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// Check if password was changed after token was issued
+userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+  if (this.password_changed_at) {
+    const changedTimestamp = parseInt(this.password_changed_at.getTime() / 1000, 10);
+    return JWTTimestamp < changedTimestamp;
+  }
+  return false;
+};
+
+// Remove password when converting to JSON
+userSchema.methods.toJSON = function() {
+  const obj = this.toObject();
+  delete obj.password;
+  delete obj.password_changed_at;
+  delete obj.__v;
+  return obj;
+};
+
 const User = mongoose.model('User', userSchema);
 
-export default User;
+export default User;  

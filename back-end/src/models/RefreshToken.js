@@ -1,4 +1,3 @@
-// models/RefreshToken.js
 import mongoose from 'mongoose';
 import crypto from 'crypto';
 
@@ -121,7 +120,7 @@ refreshTokenSchema.methods.markAsUsed = async function() {
 };
 
 // ========== MÉTODOS ESTÁTICOS ==========
-refreshTokenSchema.statics.generateToken = function() {
+refreshTokenSchema.statics.generateRefreshTokenString = function() {
   return crypto.randomBytes(40).toString('hex');
 };
 
@@ -163,7 +162,7 @@ refreshTokenSchema.statics.cleanupExpired = async function() {
 refreshTokenSchema.pre('save', function(next) {
   // Garantir que token é único e seguro
   if (this.isNew && !this.token) {
-    this.token = refreshTokenSchema.statics.generateToken();
+    this.token = refreshTokenSchema.statics.generateRefreshTokenString();
   }
   
   // Definir expiração padrão se não fornecida (30 dias)

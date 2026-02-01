@@ -1,4 +1,3 @@
-// models/LoginAttempt.js
 import mongoose from 'mongoose';
 
 const loginAttemptSchema = new mongoose.Schema(

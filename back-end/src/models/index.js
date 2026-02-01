@@ -1,4 +1,3 @@
-// models/index.js
 export { default as User } from './User.js';
 export { default as Proposal } from './Proposal.js';
 export { default as ProposalCoadvisor } from './ProposalCoadvisor.js';

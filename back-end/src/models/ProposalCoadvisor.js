@@ -1,4 +1,3 @@
-// models/ProposalCoadvisor.js - VERSÃO SIMPLIFICADA
 import mongoose from 'mongoose';
 
 const proposalCoadvisorSchema = new mongoose.Schema(

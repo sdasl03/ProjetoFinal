@@ -1,4 +1,3 @@
-// models/FileAttachment.js
 import mongoose from 'mongoose';
 
 const fileAttachmentSchema = new mongoose.Schema(

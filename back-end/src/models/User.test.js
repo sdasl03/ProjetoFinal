@@ -1,4 +1,3 @@
-// tests/User.test.js
 import mongoose from 'mongoose';
 import User from './User.js';
 import { MongoMemoryServer } from 'mongodb-memory-server';

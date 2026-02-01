@@ -1,4 +1,3 @@
-// models/PasswordReset.js
 import mongoose from 'mongoose';
 import crypto from 'crypto';
 
@@ -128,7 +127,7 @@ passwordResetSchema.methods.revoke = async function() {
 };
 
 // ========== MÉTODOS ESTÁTICOS ==========
-passwordResetSchema.statics.generateToken = function() {
+passwordResetSchema.statics.generateResetTokenString = function() {
   return crypto.randomBytes(32).toString('hex');
 };
 
@@ -183,7 +182,7 @@ passwordResetSchema.pre('save', function(next) {
   // Gerar token e hash se for novo
   if (this.isNew) {
     if (!this.token) {
-      this.token = passwordResetSchema.statics.generateToken();
+      this.token = passwordResetSchema.statics.generateResetTokenString();
     }
     this.token_hash = passwordResetSchema.statics.createHash(this.token);
     

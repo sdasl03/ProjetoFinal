@@ -1,4 +1,3 @@
-// models/ProposalStudent.js - VERSÃO SIMPLIFICADA
 import mongoose from 'mongoose';
 
 const proposalStudentSchema = new mongoose.Schema(

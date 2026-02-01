@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Carregar variáveis de ambiente do arquivo .env
-dotenv.config({ path: join(__dirname, '..', '.env') });
+dotenv.config({ path: join(__dirname, '..', '..', '.env') });
 
 // Validação das variáveis de ambiente obrigatórias
 const requiredEnvVars = [
@@ -86,7 +86,7 @@ const authConfig = {
   // JWT
   jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1h',
-  jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '15d',
+
   
   // Password
   bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS) || 10,
@@ -97,8 +97,9 @@ const authConfig = {
   lockoutTimeMinutes: parseInt(process.env.LOCKOUT_TIME_MINUTES) || 15,
   
   // Refresh tokens
-  refreshTokenExpiresDays: parseInt(process.env.REFRESH_TOKEN_EXPIRES_DAYS) || 30,
-  refreshTokenCleanupDays: parseInt(process.env.REFRESH_TOKEN_CLEANUP_DAYS) || 90,
+  refreshTokenSecret: process.env.REFRESH_TOKEN_SECRET,
+  refreshTokenExpiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN || '15d',
+  refreshTokenCleanupIn: process.env.REFRESH_TOKEN_CLEANUP_IN || '90d',
   
   // Password reset
   passwordResetExpiresHours: parseInt(process.env.PASSWORD_RESET_EXPIRES_HOURS) || 1,

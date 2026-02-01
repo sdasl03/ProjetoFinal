@@ -1,9 +1,8 @@
-// models/Proposal.js - VERSÃO CORRIGIDA (alinhada com PDF)
 import mongoose from 'mongoose';
 
 const proposalSchema = new mongoose.Schema(
   {
-    // ========== INFORMAÇÕES BÁSICAS (do PDF) ==========
+    // ========== INFORMAÇÕES BÁSICAS ==========
     title: {
       type: String,
       required: [true, 'Título é obrigatório'],
@@ -43,7 +42,7 @@ const proposalSchema = new mongoose.Schema(
       },
     },
 
-    // ========== RELACIONAMENTOS OBRIGATÓRIOS (do PDF) ==========
+    // ========== RELACIONAMENTOS OBRIGATÓRIOS ==========
     advisor_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -408,26 +407,24 @@ proposalSchema.query.editable = function() {
  */
 proposalSchema.pre('save', function(next) {
   this.updated_at = new Date();
-  next();
+  //next();
 });
 
 /**
  * Validações antes de salvar
  */
 proposalSchema.pre('save', async function(next) {
-  // Validar que o orientador é FACULTY
+   // Validar que o orientador é FACULTY
   if (this.advisor_id && this.isModified('advisor_id')) {
     const User = mongoose.model('User');
     const advisor = await User.findById(this.advisor_id);
     
     if (!advisor) {
-      next(new Error('Orientador não encontrado'));
-      return;
+      throw new Error('Orientador não encontrado');
     }
     
     if (advisor.type !== 'FACULTY') {
-      next(new Error('O orientador deve ser um docente'));
-      return;
+      throw new Error('O orientador deve ser um docente');
     }
   }
   
@@ -461,7 +458,6 @@ proposalSchema.pre('save', async function(next) {
     }
   }
   
-  next();
 });
 
 // ========== EXPORTAÇÃO ==========

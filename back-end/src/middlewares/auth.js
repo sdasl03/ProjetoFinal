@@ -1,4 +1,3 @@
-// middleware/auth.js
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import config from '../config/env.js';
@@ -80,11 +79,11 @@ export const authorize = (...allowedRoles) => {
       });
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
+    if (!allowedRoles.includes(req.user.type)) {
       return res.status(403).json({
-        error: 'Permissão negada. Role insuficiente.',
+        error: 'Permissão negada. Tipo de utilizador insuficiente.',
         requiredRoles: allowedRoles,
-        userRole: req.user.role,
+        userType: req.user.type,
       });
     }
 
@@ -97,15 +96,31 @@ export const authorize = (...allowedRoles) => {
  * @param {...string} permissions - Permissões necessárias
  */
 export const hasPermission = (...permissions) => {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
         error: 'Autenticação necessária.',
       });
     }
 
-    // Obter permissões do utilizador baseado no seu role
-    const userPermissions = getUserPermissions(req.user.role);
+    // Use user.type instead of user.role
+    const userType = req.user.type || req.user.role;
+    
+    if (!userType) {
+      return res.status(403).json({
+        error: 'Tipo de utilizador não definido.',
+      });
+    }
+
+    // Get permissions based on user type
+    const userPermissions = getUserPermissions(userType);
+    
+    console.log('Permission check:', {
+      userType,
+      requiredPermissions: permissions,
+      userPermissions,
+      userId: req.user.id
+    });
 
     const hasAllPermissions = permissions.every(permission =>
       userPermissions.includes(permission)
@@ -116,13 +131,13 @@ export const hasPermission = (...permissions) => {
         error: 'Permissão negada.',
         requiredPermissions: permissions,
         userPermissions: userPermissions,
+        userType: userType,
       });
     }
 
     next();
   };
 };
-
 /**
  * Middleware para logging de requisições
  */
@@ -151,13 +166,19 @@ export const requestLogger = (req, res, next) => {
 };
 
 /**
- * Função auxiliar para obter permissões por role
- * @param {string} role - Role do utilizador
+ * Função auxiliar para obter permissões por tipo de utilizador
+ * @param {string} userType - Tipo de utilizador
  * @returns {array} - Array de permissões
  */
-function getUserPermissions(role) {
-  const rolePermissions = {
-    admin: [
+// In middleware/auth.js - Complete fixed version
+function getUserPermissions(userType) {
+  console.log('\n=== GET USER PERMISSIONS DEBUG ===');
+  console.log('Input userType:', userType);
+  console.log('Type of userType:', typeof userType);
+  
+  // CORRECTED: Define typePermissions object properly
+  const typePermissions = {
+    'ADMIN': [
       'read:users',
       'create:users',
       'update:users',
@@ -168,8 +189,12 @@ function getUserPermissions(role) {
       'delete:proposals',
       'manage:system',
       'view:reports',
+      'proposals:create',
+      'proposals:read',
+      'proposals:update',
+      'proposals:delete',
     ],
-    professor: [
+    'FACULTY': [
       'read:users',
       'read:proposals',
       'create:proposals',
@@ -177,22 +202,39 @@ function getUserPermissions(role) {
       'read:students',
       'manage:coadvisors',
       'view:reports',
+      'proposals:create',
+      'proposals:read',
+      'proposals:update',
+      'proposals:delete',
     ],
-    coadvisor: [
+    'COADVISOR': [
       'read:users',
       'read:proposals',
       'read:students',
       'update:proposals',
       'view:reports',
+      'proposals:read',
+      'proposals:update',
     ],
-    student: [
+    'STUDENT': [
       'read:users',
       'read:proposals',
       'apply:proposals',
       'read:applications',
       'upload:files',
+      'proposals:read',
+      'proposals:apply',
     ],
   };
 
-  return rolePermissions[role] || [];
+  // Normalize the userType
+  const normalizedType = String(userType || '').toUpperCase().trim();
+  console.log('Normalized type:', normalizedType);
+  console.log('Available keys:', Object.keys(typePermissions));
+  
+  const permissions = typePermissions[normalizedType] || [];
+  console.log('Returning permissions:', permissions);
+  console.log('Permissions length:', permissions.length);
+  
+  return permissions;
 }

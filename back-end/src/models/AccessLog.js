@@ -1,4 +1,4 @@
-// models/AccessLog.js
+import { randomBytes } from 'crypto';
 import mongoose from 'mongoose';
 
 const accessLogSchema = new mongoose.Schema(
@@ -253,7 +253,7 @@ accessLogSchema.statics.logRequest = async function(logData) {
   try {
     // Gerar request ID único se não fornecido
     if (!logData.request_id) {
-      logData.request_id = require('crypto').randomBytes(16).toString('hex');
+      logData.request_id = randomBytes(16).toString('hex');
     }
     
     // Processar user agent para extrair info do dispositivo
