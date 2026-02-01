@@ -153,7 +153,7 @@ export default {
         if (result.success) {
           // Redirect to proposals or intended page
           const redirect = this.$route.query.redirect;
-          this.$router.push(redirect || '/proposals');
+          this.$router.push(redirect || '/');
         } else {
           this.error = result.error || 'Credenciais inválidas. Tente novamente.';
         }

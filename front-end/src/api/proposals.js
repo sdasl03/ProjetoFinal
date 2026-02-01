@@ -5,6 +5,14 @@ export const proposalsApi = {
   getProposals(params) {
     return api.get('/proposals', { params });
   },
+  // Create proposal with files
+  createProposalWithFiles(formData) {
+    return api.post('/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  },
 
   // Create proposal
   createProposal(data) {

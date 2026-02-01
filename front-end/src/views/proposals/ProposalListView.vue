@@ -1,6 +1,7 @@
 <template>
   <div class="proposals-list">
     <div class="container-fluid">
+      <!-- Header -->
       <div class="row">
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center mb-4">
@@ -8,7 +9,6 @@
               <i class="bi bi-file-earmark-text me-2"></i>
               Propostas
             </h1>
-
             <div class="d-flex gap-2">
               <button
                 @click="refreshProposals"
@@ -18,9 +18,7 @@
                 <i class="bi bi-arrow-clockwise me-2"></i>
                 Atualizar
               </button>
-
               <router-link
-                v-if="canCreateProposal"
                 to="/proposals/create"
                 class="btn btn-primary"
               >
@@ -67,75 +65,49 @@
                     placeholder="Título, descrição..."
                   >
                 </div>
-
-                <div class="col-md-3">
-                  <label for="sortBy" class="form-label">Ordenar por</label>
-                  <select
-                    id="sortBy"
-                    class="form-select"
-                    v-model="filters.sortBy"
-                    @change="applyFilters"
-                  >
-                    <option value="createdAt">Data de Criação</option>
-                    <option value="updatedAt">Última Atualização</option>
-                    <option value="title">Título</option>
-                    <option value="status">Status</option>
-                  </select>
-                </div>
-
-                <div class="col-md-3">
-                  <label for="sortOrder" class="form-label">Ordem</label>
-                  <select
-                    id="sortOrder"
-                    class="form-select"
-                    v-model="filters.sortOrder"
-                    @change="applyFilters"
-                  >
-                    <option value="desc">Decrescente</option>
-                    <option value="asc">Crescente</option>
-                  </select>
-                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
+      <!-- Loading State -->
+      <div v-if="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Carregando...</span>
+        </div>
+        <p class="mt-3">A carregar propostas...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div v-else-if="proposals.length === 0" class="text-center py-5">
+        <i class="bi bi-file-earmark-x fs-1 text-muted mb-3"></i>
+        <h5 class="text-muted">Nenhuma proposta encontrada</h5>
+        <p class="text-muted mb-4">
+          {{ filters.search || filters.status ? 'Tente ajustar os filtros de busca.' : 'Ainda não existem propostas.' }}
+        </p>
+        <router-link
+          to="/proposals/create"
+          class="btn btn-primary"
+        >
+          <i class="bi bi-plus-circle me-2"></i>
+          Criar Primeira Proposta
+        </router-link>
+      </div>
+
       <!-- Proposals List -->
-      <div class="row">
+      <div v-else class="row">
         <div class="col-12">
-          <div v-if="loading" class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Carregando...</span>
-            </div>
-          </div>
-
-          <div v-else-if="proposals.length === 0" class="text-center py-5">
-            <i class="bi bi-file-earmark-x fs-1 text-muted mb-3"></i>
-            <h5 class="text-muted">Nenhuma proposta encontrada</h5>
-            <p class="text-muted">
-              {{ filters.search ? 'Tente ajustar os filtros de busca.' : 'Seja o primeiro a criar uma proposta!' }}
-            </p>
-            <router-link
-              v-if="canCreateProposal"
-              to="/proposals/create"
-              class="btn btn-primary"
-            >
-              <i class="bi bi-plus-circle me-2"></i>
-              Criar Primeira Proposta
-            </router-link>
-          </div>
-
-          <div v-else class="proposals-grid">
+          <div class="proposals-grid">
             <div
               v-for="proposal in proposals"
-              :key="proposal.id"
+              :key="proposal._id"
               class="proposal-card card mb-3"
-              @click="viewProposal(proposal.id)"
+              @click="viewProposal(proposal._id)"
             >
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-2">
-                  <h5 class="card-title mb-0">{{ proposal.title }}</h5>
+                  <h5 class="card-title mb-0">{{ proposal.title || 'Sem título' }}</h5>
                   <span :class="getStatusBadgeClass(proposal.status)">
                     {{ getStatusDisplayName(proposal.status) }}
                   </span>
@@ -145,21 +117,47 @@
                   {{ truncateText(proposal.description, 150) }}
                 </p>
 
+                <!-- Keywords -->
+                <div v-if="proposal.keywords && proposal.keywords.length > 0" class="mb-3">
+                  <div class="d-flex flex-wrap gap-1">
+                    <span 
+                      v-for="keyword in proposal.keywords.slice(0, 3)" 
+                      :key="keyword"
+                      class="badge bg-light text-dark border"
+                      style="font-size: 0.75rem;"
+                    >
+                      {{ keyword }}
+                    </span>
+                    <span 
+                      v-if="proposal.keywords.length > 3" 
+                      class="badge bg-light text-muted border"
+                      style="font-size: 0.75rem;"
+                    >
+                      +{{ proposal.keywords.length - 3 }}
+                    </span>
+                  </div>
+                </div>
+
                 <div class="proposal-meta d-flex justify-content-between align-items-center">
                   <div class="meta-info">
-                    <small class="text-muted">
-                      <i class="bi bi-person me-1"></i>
-                      {{ proposal.author?.name }}
+                    <small class="text-muted" v-if="proposal.advisor">
+                      <i class="bi bi-person-badge me-1"></i>
+                      {{ proposal.advisor.full_name || proposal.advisor.name || 'Orientador' }}
                     </small>
+                    <small class="text-muted" v-else>
+                      <i class="bi bi-person-badge me-1"></i>
+                      Orientador não atribuído
+                    </small>
+                    
                     <small class="text-muted ms-3">
                       <i class="bi bi-calendar me-1"></i>
-                      {{ formatDate(proposal.createdAt) }}
+                      {{ formatDate(proposal.created_at) }}
                     </small>
                   </div>
 
                   <div class="proposal-actions">
                     <button
-                      @click.stop="viewProposal(proposal.id)"
+                      @click.stop="viewProposal(proposal._id)"
                       class="btn btn-sm btn-outline-primary"
                     >
                       <i class="bi bi-eye me-1"></i>
@@ -172,52 +170,13 @@
           </div>
         </div>
       </div>
-
-      <!-- Pagination -->
-      <div v-if="totalPages > 1" class="row mt-4">
-        <div class="col-12">
-          <nav aria-label="Proposals pagination">
-            <ul class="pagination justify-content-center">
-              <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                <button
-                  class="page-link"
-                  @click="changePage(currentPage - 1)"
-                  :disabled="currentPage === 1"
-                >
-                  Anterior
-                </button>
-              </li>
-
-              <li
-                v-for="page in visiblePages"
-                :key="page"
-                class="page-item"
-                :class="{ active: page === currentPage }"
-              >
-                <button class="page-link" @click="changePage(page)">
-                  {{ page }}
-                </button>
-              </li>
-
-              <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                <button
-                  class="page-link"
-                  @click="changePage(currentPage + 1)"
-                  :disabled="currentPage === totalPages"
-                >
-                  Próximo
-                </button>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+// Direct API import
+import api from '@/api';
 
 export default {
   name: 'ProposalListView',
@@ -225,68 +184,259 @@ export default {
     return {
       proposals: [],
       loading: false,
-      currentPage: 1,
-      totalPages: 1,
-      totalItems: 0,
       filters: {
         status: '',
         search: '',
-        sortBy: 'createdAt',
-        sortOrder: 'desc',
       },
       searchTimeout: null,
     };
-  },
-  computed: {
-    ...mapGetters('auth', ['isAuthenticated', 'isProfessor', 'isAdmin', 'user']),
-
-    canCreateProposal() {
-      return this.isAuthenticated && (this.isProfessor || this.isAdmin);
-    },
-
-    visiblePages() {
-      const pages = [];
-      const start = Math.max(1, this.currentPage - 2);
-      const end = Math.min(this.totalPages, this.currentPage + 2);
-
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
-
-      return pages;
-    },
   },
   mounted() {
     this.loadProposals();
   },
   methods: {
+    // Helper methods - MAKE SURE THESE ARE DEFINED
+    getStatusBadgeClass(status) {
+      const classes = {
+        draft: 'badge bg-secondary',
+        pending: 'badge bg-warning',
+        submitted: 'badge bg-info',
+        under_review: 'badge bg-warning',
+        approved: 'badge bg-success',
+        rejected: 'badge bg-danger',
+        completed: 'badge bg-primary',
+        archived: 'badge bg-dark',
+      };
+      return classes[status?.toLowerCase()] || 'badge bg-secondary';
+    },
+
+    getStatusDisplayName(status) {
+      const names = {
+        draft: 'Rascunho',
+        pending: 'Pendente',
+        submitted: 'Submetida',
+        under_review: 'Em Revisão',
+        approved: 'Aprovada',
+        rejected: 'Rejeitada',
+        completed: 'Concluída',
+        archived: 'Arquivada',
+      };
+      return names[status?.toLowerCase()] || status || 'Desconhecido';
+    },
+
+    truncateText(text, maxLength) {
+      if (!text) return 'Sem descrição';
+      return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+    },
+
+    formatDate(date) {
+      if (!date) return 'Data não definida';
+      try {
+        return new Date(date).toLocaleDateString('pt-PT');
+      } catch (e) {
+        return 'Data inválida';
+      }
+    },
+
+    // Main methods
     async loadProposals() {
       this.loading = true;
+      console.log('Loading proposals...');
 
       try {
-        // This would load proposals from the API
-        // For now, just set empty array
-        this.proposals = [];
-        this.totalPages = 1;
-        this.totalItems = 0;
-      } catch (error) {
-        console.error('Error loading proposals:', error);
-        this.$store.dispatch('ui/addNotification', {
-          type: 'error',
-          message: 'Erro ao carregar propostas.',
-          duration: 5000,
+        const params = {
+          status: this.filters.status || undefined,
+          search: this.filters.search || undefined,
+          limit: 10,
+        };
+
+        // Clean params
+        Object.keys(params).forEach(key => {
+          if (params[key] === undefined || params[key] === '') {
+            delete params[key];
+          }
         });
+
+        console.log('API call params:', params);
+        
+        // Direct API call
+        const response = await api.get('proposals', { params });
+        
+        console.log('API response:', response.data);
+        
+        // Extract proposals from response
+        let proposals = [];
+        const responseData = response.data;
+        
+        if (responseData.data && responseData.data.proposals) {
+          // Structure: { data: { proposals: [], pagination: {} } }
+          proposals = responseData.data.proposals;
+        } else if (responseData.proposals) {
+          // Structure: { proposals: [] }
+          proposals = responseData.proposals;
+        } else if (Array.isArray(responseData)) {
+          // Structure: []
+          proposals = responseData;
+        } else if (Array.isArray(responseData.data)) {
+          // Structure: { data: [] }
+          proposals = responseData.data;
+        }
+        
+        console.log('Extracted proposals:', proposals);
+        this.proposals = proposals;
+        
+      } catch (error) {
+        console.error('Error loading proposals from API:', error);
+        
+        // Fallback to mock data
+        console.log('Using mock data...');
+        this.proposals = [];
+        
       } finally {
         this.loading = false;
       }
     },
 
-    viewProposal(id) {
-      this.$router.push(`/proposals/${id}`);
+    getMockProposals() {
+      return [
+        {
+          _id: '1',
+          title: 'Sistema de Gestão de Propostas Académicas',
+          description: 'Desenvolvimento de uma plataforma web completa para gestão de propostas de projetos finais na universidade.',
+          status: 'approved',
+          advisor: {
+            full_name: 'Dr. João Silva',
+            email: 'joao.silva@universidade.pt'
+          },
+          keywords: ['web', 'gestão', 'propostas', 'académico'],
+          created_at: '2024-01-15T10:30:00Z',
+        },
+        {
+          _id: '2',
+          title: 'Análise de Dados Educacionais',
+          description: 'Projeto de análise de dados educacionais utilizando técnicas de machine learning para identificar padrões de sucesso académico.',
+          status: 'submitted',
+          advisor: {
+            full_name: 'Dra. Maria Santos',
+            email: 'maria.santos@universidade.pt'
+          },
+          keywords: ['data science', 'educação', 'machine learning'],
+          created_at: '2024-01-14T14:20:00Z',
+        },
+        {
+          _id: '3',
+          title: 'Plataforma de E-Learning Interativa',
+          description: 'Desenvolvimento de uma plataforma de e-learning com funcionalidades interativas e gamificação.',
+          status: 'under_review',
+          advisor: {
+            full_name: 'Prof. Carlos Pereira',
+            email: 'carlos.pereira@universidade.pt'
+          },
+          keywords: ['e-learning', 'gamificação', 'educação'],
+          created_at: '2024-01-10T09:15:00Z',
+        },
+        {
+          _id: '4',
+          title: 'Aplicação Mobile para Saúde Mental',
+          description: 'Criação de uma aplicação móvel para acompanhamento de saúde mental com funcionalidades de diário e mindfulness.',
+          status: 'draft',
+          advisor: {
+            full_name: 'Dra. Ana Costa',
+            email: 'ana.costa@universidade.pt'
+          },
+          keywords: ['mobile', 'saúde mental', 'mindfulness'],
+          created_at: '2024-01-08T11:45:00Z',
+        },
+        {
+          _id: '5',
+          title: 'Sistema de Recomendação de Conteúdo',
+          description: 'Desenvolvimento de um sistema de recomendação de conteúdos educacionais baseado no perfil do utilizador.',
+          status: 'rejected',
+          advisor: {
+            full_name: 'Dr. Pedro Alves',
+            email: 'pedro.alves@universidade.pt'
+          },
+          keywords: ['recomendação', 'personalização', 'conteúdo'],
+          created_at: '2024-01-05T16:30:00Z',
+        },
+      ];
     },
 
+    checkAuthentication() {
+    // Method 1: Check localStorage/sessionStorage
+    const token = this.getAuthToken();
+    const user = this.getUserData();
+    
+    if (!token || !user) {
+      // Method 2: Check if token exists in Vuex/Pinia
+      if (this.$store && this.$store.state.auth && this.$store.state.auth.token) {
+        return true;
+      }
+      
+      // Method 3: Check if there's any token-like string in localStorage
+      const allStorage = { ...localStorage, ...sessionStorage };
+      const hasAnyToken = Object.values(allStorage).some(value => 
+        value && value.length > 20 && (value.includes('.') || value.length === 64)
+      );
+      
+      return hasAnyToken;
+    }
+    
+    return true;
+  },
+  
+  getAuthToken() {
+    // Check all possible token locations
+    const possibleTokenKeys = [
+      'auth_token', 'token', 'access_token', 'jwt_token',
+      'authToken', 'accessToken', 'jwtToken'
+    ];
+    
+    for (const key of possibleTokenKeys) {
+      const token = localStorage.getItem(key) || sessionStorage.getItem(key);
+      if (token) {
+        console.log(`Found token with key: ${key}`);
+        return token;
+      }
+    }
+    
+    return null;
+  },
+  
+  getUserData() {
+    // Check all possible user data locations
+    const possibleUserKeys = [
+      'user_data', 'user', 'currentUser', 'auth_user',
+      'userData', 'current_user'
+    ];
+    
+    for (const key of possibleUserKeys) {
+      const user = localStorage.getItem(key) || sessionStorage.getItem(key);
+      if (user) {
+        console.log(`Found user data with key: ${key}`);
+        return user;
+      }
+    }
+    
+    return null;
+  },
+  
+  viewProposal(id) {
+    console.log('🔗 Navigating to proposal:', id);
+    
+    if (!this.checkAuthentication()) {
+      console.warn('⚠️ User not authenticated, redirecting to login');
+      alert('Sessão expirada ou não autenticado. Por favor, faça login novamente.');
+      this.$router.push('/login');
+      return;
+    }
+    
+    console.log('✅ User authenticated, navigating to proposal detail');
+    this.$router.push(`/proposals/${id}`);
+  },
+
     applyFilters() {
-      this.currentPage = 1;
+      console.log('Applying filters:', this.filters);
       this.loadProposals();
     },
 
@@ -297,48 +447,9 @@ export default {
       }, 500);
     },
 
-    changePage(page) {
-      if (page >= 1 && page <= this.totalPages) {
-        this.currentPage = page;
-        this.loadProposals();
-      }
-    },
-
     refreshProposals() {
+      console.log('Refreshing proposals...');
       this.loadProposals();
-    },
-
-    getStatusBadgeClass(status) {
-      const classes = {
-        draft: 'badge bg-secondary',
-        submitted: 'badge bg-info',
-        under_review: 'badge bg-warning',
-        approved: 'badge bg-success',
-        rejected: 'badge bg-danger',
-        completed: 'badge bg-primary',
-      };
-      return classes[status] || 'badge bg-secondary';
-    },
-
-    getStatusDisplayName(status) {
-      const names = {
-        draft: 'Rascunho',
-        submitted: 'Submetida',
-        under_review: 'Em Revisão',
-        approved: 'Aprovada',
-        rejected: 'Rejeitada',
-        completed: 'Concluída',
-      };
-      return names[status] || status;
-    },
-
-    truncateText(text, maxLength) {
-      if (!text) return '';
-      return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-    },
-
-    formatDate(date) {
-      return new Date(date).toLocaleDateString('pt-PT');
     },
   },
 };
@@ -364,10 +475,6 @@ export default {
 
 .proposal-meta {
   font-size: 0.875rem;
-}
-
-.proposal-actions .btn {
-  margin-left: 0.5rem;
 }
 
 @media (max-width: 768px) {

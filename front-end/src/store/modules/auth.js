@@ -1,149 +1,126 @@
 // src/store/modules/auth.js
-import axios from 'axios';
-
-const state = {
-  user: null,
-  token: null,
-  isAuthenticated: false,
-  loading: false,
-  error: null,
-};
-
-const getters = {
-  isAuthenticated: (state) => state.isAuthenticated,
-  user: (state) => state.user,
-  token: (state) => state.token,
-  loading: (state) => state.loading,
-  error: (state) => state.error,
-  userRole: (state) => state.user?.role || null,
-  isAdmin: (state) => state.user?.role === 'admin',
-  isProfessor: (state) => state.user?.role === 'professor',
-  isStudent: (state) => state.user?.role === 'student',
-  isCoAdvisor: (state) => state.user?.role === 'coadvisor',
-};
-
-const mutations = {
-  SET_LOADING(state, loading) {
-    state.loading = loading;
-  },
-  SET_ERROR(state, error) {
-    state.error = error;
-  },
-  SET_USER(state, user) {
-    state.user = user;
-    state.isAuthenticated = !!user;
-  },
-  SET_TOKEN(state, token) {
-    state.token = token;
-    if (token) {
-      localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    } else {
-      localStorage.removeItem('token');
-      delete axios.defaults.headers.common['Authorization'];
-    }
-  },
-  LOGOUT(state) {
-    state.user = null;
-    state.token = null;
-    state.isAuthenticated = false;
-    state.error = null;
-    localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
-  },
-  CLEAR_ERROR(state) {
-    state.error = null;
-  },
-};
-
-const actions = {
-  async login({ commit }, credentials) {
-    commit('SET_LOADING', true);
-    commit('CLEAR_ERROR');
-
-    try {
-      const response = await axios.post('/api/auth/login', credentials);
-      const { user, token } = response.data.data;
-
-      commit('SET_TOKEN', token);
-      commit('SET_USER', user);
-
-      return response.data;
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Login failed';
-      commit('SET_ERROR', errorMessage);
-      throw error;
-    } finally {
-      commit('SET_LOADING', false);
-    }
-  },
-
-  async register({ commit }, userData) {
-    commit('SET_LOADING', true);
-    commit('CLEAR_ERROR');
-
-    try {
-      const response = await axios.post('/api/auth/register', userData);
-      return response.data;
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Registration failed';
-      commit('SET_ERROR', errorMessage);
-      throw error;
-    } finally {
-      commit('SET_LOADING', false);
-    }
-  },
-
-  async logout({ commit }) {
-    try {
-      await axios.post('/api/auth/logout');
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      commit('LOGOUT');
-    }
-  },
-
-  async checkAuth({ commit }) {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    try {
-      commit('SET_TOKEN', token);
-      const response = await axios.get('/api/auth/me');
-      commit('SET_USER', response.data.data.user);
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      commit('LOGOUT');
-    }
-  },
-
-  async updateProfile({ commit }, userData) {
-    commit('SET_LOADING', true);
-    commit('CLEAR_ERROR');
-
-    try {
-      const response = await axios.put('/api/users/profile', userData);
-      commit('SET_USER', response.data.data.user);
-      return response.data;
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Profile update failed';
-      commit('SET_ERROR', errorMessage);
-      throw error;
-    } finally {
-      commit('SET_LOADING', false);
-    }
-  },
-
-  clearError({ commit }) {
-    commit('CLEAR_ERROR');
-  },
-};
+import api from '@/api';
+import router from '@/router';
 
 export default {
   namespaced: true,
-  state,
-  getters,
-  mutations,
-  actions,
+
+  state: () => ({
+    user: null,
+    token: null,
+    isAuthenticated: false
+  }),
+
+ mutations: {
+    SET_USER(state, user) {
+      state.user = user;
+    },
+    
+    SET_TOKEN(state, token) {
+      state.token = token;
+    },
+    
+    SET_AUTHENTICATED(state, value) {
+      state.isAuthenticated = value;
+    },
+    
+    LOGOUT(state) {
+      state.user = null;
+      state.token = null;
+      state.isAuthenticated = false;
+    }
+  },
+  
+  actions: {
+    async login({ commit }, credentials) {
+      try {
+        const response = await api.post('/auth/login', credentials);
+        const { user, token } = response.data.data;
+        
+        // Save to localStorage
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('user_data', JSON.stringify(user));
+        
+        // Commit to Vuex
+        commit('SET_AUTH', { user, token });
+        
+        // Redirect
+        router.push('/dashboard');
+        
+        return { success: true, user };
+      } catch (error) {
+        console.error('Login error:', error);
+        throw error;
+      }
+    },
+    
+    async logout({ commit, state }) {
+      try {
+        // Optional: Call logout API if it exists
+        if (state.token) {
+          try {
+            await api.post('/auth/logout', {}, {
+              headers: { Authorization: `Bearer ${state.token}` }
+            });
+          } catch (apiError) {
+            console.warn('Logout API call failed, proceeding with client cleanup:', apiError.message);
+          }
+        }
+      } finally {
+        // Always perform client-side cleanup
+        this.clearAuthData(commit);
+        
+        // Redirect to login
+        router.push('/login');
+        
+        return true;
+      }
+    },
+    
+    clearAuthData(commit) {
+      // Clear all possible auth storage
+      const authKeys = [
+        'auth_token', 'token', 'access_token',
+        'user_data', 'user', 'currentUser',
+        'user_id', 'refresh_token'
+      ];
+      
+      authKeys.forEach(key => {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+      });
+      
+      // Clear all cookies
+      document.cookie.split(';').forEach(cookie => {
+        const name = cookie.split('=')[0].trim();
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      });
+      
+      // Clear Vuex state
+      if (commit) commit('LOGOUT');
+    },
+    
+    checkAuth({ commit }) {
+      const token = localStorage.getItem('auth_token');
+      const userData = localStorage.getItem('user_data');
+      
+      if (token && userData) {
+        try {
+          const user = JSON.parse(userData);
+          commit('SET_AUTH', { user, token });
+          return true;
+        } catch (e) {
+          this.clearAuthData(commit);
+          return false;
+        }
+      }
+      return false;
+    }
+  },
+  
+  getters: {
+    currentUser: (state) => state.user,
+    isAuthenticated: (state) => state.isAuthenticated,
+    authToken: (state) => state.token
+  }
 };
