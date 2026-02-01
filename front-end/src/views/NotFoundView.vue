@@ -24,11 +24,11 @@
 
               <router-link
                 v-if="isAuthenticated"
-                to="/dashboard"
+                to="/"
                 class="btn btn-outline-primary btn-lg"
               >
                 <i class="bi bi-speedometer2 me-2"></i>
-                Dashboard
+                Home
               </router-link>
 
               <button

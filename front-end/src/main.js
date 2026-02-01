@@ -17,7 +17,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import './assets/scss/main.scss';
 
 // Set axios defaults
-axios.defaults.baseURL = process.env.VUE_APP_API_BASE_URL;
+axios.defaults.baseURL = process.env.API_BASE_URL;
 
 // Create Vue app
 const app = createApp(App);

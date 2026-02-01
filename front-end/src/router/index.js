@@ -31,12 +31,6 @@ const routes = [
   
   // Protected routes
   {
-    path: '/dashboard',
-    name: 'Dashboard',
-    component: () => import('@/views/DashboardView.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
     path: '/proposals',
     name: 'Proposals',
     component: () => import('@/views/proposals/ProposalListView.vue'),
@@ -87,25 +81,25 @@ router.beforeEach((to, from, next) => {
   
   // Check if route is guest-only (login/register when already logged in)
   if (to.meta.guestOnly && isAuthenticated) {
-    next({ name: 'Dashboard' });
+    next({ name: 'Proposals' });
     return;
   }
   
   // Check faculty-only routes
   if (to.meta.facultyOnly && userType !== 'FACULTY') {
-    next({ name: 'Dashboard' });
+    next({ name: 'Proposals' });
     return;
   }
   
   // Check student-only routes
   if (to.meta.studentOnly && userType !== 'STUDENT') {
-    next({ name: 'Dashboard' });
+    next({ name: 'Proposals' });
     return;
   }
   
   // Check admin-only routes
   if (to.meta.adminOnly && userType !== 'ADMIN') {
-    next({ name: 'Dashboard' });
+    next({ name: 'Proposals' });
     return;
   }
   

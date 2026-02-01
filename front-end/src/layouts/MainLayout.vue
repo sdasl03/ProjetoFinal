@@ -1,4 +1,3 @@
-<!-- src/layouts/MainLayout.vue -->
 <template>
   <div class="main-layout">
     <header class="header">
@@ -27,11 +26,6 @@
                 <li class="nav-item">
                   <router-link to="/proposals" class="nav-link">
                     <i class="fas fa-file-alt me-1"></i> Propostas
-                  </router-link>
-                </li>
-                <li class="nav-item">
-                  <router-link to="/dashboard" class="nav-link">
-                    <i class="fas fa-tachometer-alt me-1"></i> Dashboard
                   </router-link>
                 </li>
                 
@@ -105,7 +99,7 @@ export default {
   name: 'MainLayout',
   data() {
     return {
-      appName: process.env.VUE_APP_NAME || 'Gestão de Projetos',
+      appName: process.env.APP_NAME || 'Gestão de Projetos',
       menuOpen: false,
       dropdownOpen: false,
     };
@@ -125,7 +119,9 @@ export default {
       this.dropdownOpen = !this.dropdownOpen;
     },
     logout() {
-      this.$store.dispatch('auth/logout');
+      this.$store.dispatch('auth/logout').then(() => {
+        this.$router.push('/');
+      });
     },
   },
   mounted() {

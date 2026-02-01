@@ -214,9 +214,28 @@
                 </button>
               </form>
             </div>
+          <!-- Account Actions -->
+          <div class="card">
+            <div class="card-header">
+              <h6 class="mb-0">Ações da Conta</h6>
+            </div>
+            <div class="card-body">
+              <button
+                type="button"
+                class="btn btn-outline-danger w-100"
+                @click="logout"
+              >
+                <i class="bi bi-box-arrow-right me-2"></i>
+                Terminar Sessão
+              </button>
+              <p class="text-muted small mt-2 mb-0">
+                Será redirecionado para a página inicial
+              </p>
+            </div>
           </div>
         </div>
       </div>
+    </div>
     </div>
   </div>
 </template>
@@ -331,6 +350,26 @@ export default {
         });
       } finally {
         this.passwordLoading = false;
+      }
+    },
+
+    async logout() {
+      if (confirm('Tem certeza que deseja terminar a sessão?')) {
+        try {
+          await this.$store.dispatch('auth/logout');
+          this.$router.push('/');
+          this.addNotification({
+            type: 'success',
+            message: 'Sessão terminada com sucesso!',
+            duration: 3000,
+          });
+        } catch (error) {
+          this.addNotification({
+            type: 'error',
+            message: 'Erro ao terminar sessão.',
+            duration: 3000,
+          });
+        }
       }
     },
 

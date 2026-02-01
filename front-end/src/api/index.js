@@ -2,8 +2,9 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.VUE_APP_API_BASE_URL,
-  timeout: process.env.VUE_APP_DEFAULT_TIMEOUT || 30000,
+  //baseURL: process.env.API_BASE_URL+'/api/'|| 'http://localhost:3000',
+  baseURL: 'http://localhost:3000/api',
+  timeout: process.env.DEFAULT_TIMEOUT || 30000,
   headers: {
     'Content-Type': 'application/json',
   },

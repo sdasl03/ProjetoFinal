@@ -1,13 +1,22 @@
 <!-- src/App.vue -->
 <template>
-  <div id="app">
+  <MainLayout/>
+
+  <!--
+  div id="app">
     <router-view />
   </div>
+  -->
 </template>
 
 <script>
+import MainLayout from './layouts/MainLayout.vue';
+
 export default {
   name: 'App',
+  components: {
+    MainLayout,
+  },
   created() {
     // Fetch current user on app start if token exists
     if (this.$store.state.auth.isAuthenticated) {

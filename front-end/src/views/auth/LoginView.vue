@@ -152,9 +152,9 @@ export default {
         const result = await this.login(this.form);
         
         if (result.success) {
-          // Redirect to dashboard or intended page
+          // Redirect to proposals or intended page
           const redirect = this.$route.query.redirect;
-          this.$router.push(redirect || '/dashboard');
+          this.$router.push(redirect || '/proposals');
         } else {
           this.error = result.error || 'Credenciais inválidas. Tente novamente.';
         }
