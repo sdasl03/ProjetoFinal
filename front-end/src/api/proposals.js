@@ -1,4 +1,3 @@
-// src/api/proposals.js
 import api from './index';
 
 export const proposalsApi = {

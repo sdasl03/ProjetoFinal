@@ -1,5 +1,3 @@
-// src/utils/helpers.js
-
 /**
  * Format date to local string
  */

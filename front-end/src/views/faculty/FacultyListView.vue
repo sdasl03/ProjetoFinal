@@ -1,4 +1,3 @@
-<!-- src/views/faculty/FacultyListView.vue -->
 <template>
   <div class="faculty-list-view">
     <!-- Page Header -->

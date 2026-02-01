@@ -1,4 +1,3 @@
-// src/store/index.js
 import { createStore } from 'vuex';
 import auth from './modules/auth';
 import ui from './modules/ui';

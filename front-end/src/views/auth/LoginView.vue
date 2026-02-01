@@ -1,4 +1,3 @@
-<!-- src/views/auth/LoginView.vue -->
 <template>
   <div class="login-view">
     <div class="container">

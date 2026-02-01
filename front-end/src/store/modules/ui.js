@@ -1,5 +1,3 @@
-// src/store/modules/ui.js
-
 const state = {
   sidebarOpen: false,
   loading: false,

@@ -125,26 +125,6 @@ const databaseConfig = {
   gridfsChunkSize: parseInt(process.env.GRIDFS_CHUNK_SIZE) || 255 * 1024, // 255KB
 };
 
-// Configurações de email (opcional)
-const emailConfig = {
-  enabled: process.env.EMAIL_ENABLED === 'true',
-  host: process.env.EMAIL_HOST,
-  port: parseInt(process.env.EMAIL_PORT) || 587,
-  secure: process.env.EMAIL_SECURE === 'true',
-  user: process.env.EMAIL_USER,
-  password: process.env.EMAIL_PASSWORD,
-  from: process.env.EMAIL_FROM || 'no-reply@universidade.edu',
-  
-  // Templates
-  templates: {
-    welcomeSubject: 'Bem-vindo ao Sistema de Gestão de Propostas',
-    passwordResetSubject: 'Redefinição de Password',
-    proposalSubmittedSubject: 'Proposta Submetida',
-    proposalApprovedSubject: 'Proposta Aprovada',
-    coadvisorInvitationSubject: 'Convite para Coorientação',
-    studentApplicationSubject: 'Nova Candidatura de Aluno',
-  },
-};
 // Configurações do frontend
 const frontendConfig = {
   url: process.env.FRONTEND_URL || 'http://localhost:8080',
@@ -168,71 +148,16 @@ const loggingConfig = {
   morganFormat: process.env.MORGAN_FORMAT || (process.env.NODE_ENV === 'production' ? 'combined' : 'dev'),
 };
 
-// Configurações de auditoria
-const auditConfig = {
-  enabled: process.env.AUDIT_ENABLED !== 'false',
-  retentionDays: parseInt(process.env.AUDIT_RETENTION_DAYS) || 90,
-  logSensitiveData: process.env.AUDIT_LOG_SENSITIVE_DATA === 'true',
-};
 
 // Configuração completa
 export const config = {
   server: serverConfig,
   auth: authConfig,
   database: databaseConfig,
-  email: emailConfig,
   frontend: frontendConfig,
   logging: loggingConfig,
-  audit: auditConfig,
 };
-//REVIEW
-/*
-const config = {
-  server: {
-    port: process.env.PORT || 5000,
-    nodeEnv,
-    isProduction,
-    isDevelopment,
-    baseUrl: process.env.BASE_URL || 'http://localhost:5000',
-  },
-  cors: {
-    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:5173', 'http://localhost:3000'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    optionsSuccessStatus: 200,
-  },
-  database: {
-    uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/projeto_final',
-    options: {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    },
-  },
-  jwt: {
-    accessTokenSecret: process.env.JWT_ACCESS_SECRET || 'your-access-secret-key',
-    refreshTokenSecret: process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key',
-    accessTokenExpiry: process.env.JWT_ACCESS_EXPIRY || '15m',
-    refreshTokenExpiry: process.env.JWT_REFRESH_EXPIRY || '7d',
-  },
-  session: {
-    secret: process.env.SESSION_SECRET || 'your-session-secret',
-    maxAttempts: parseInt(process.env.MAX_LOGIN_ATTEMPTS || '5'),
-    lockoutTime: parseInt(process.env.LOCKOUT_TIME || '900000'), // 15 minutes in ms
-  },
-  email: {
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.EMAIL_PORT || '587'),
-    user: process.env.EMAIL_USER,
-    password: process.env.EMAIL_PASSWORD,
-    from: process.env.EMAIL_FROM || 'noreply@projetofinal.com',
-  },
-  file: {
-    maxSize: parseInt(process.env.MAX_FILE_SIZE || '10485760'), // 10MB in bytes
-    uploadDir: process.env.UPLOAD_DIR || './uploads',
-    allowedMimeTypes: ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-  },
-};*/
+
 // Funções auxiliares
 export const isProduction = () => config.server.isProduction;
 export const isDevelopment = () => config.server.isDevelopment;
@@ -305,7 +230,6 @@ export const printConfigSummary = () => {
   console.log(`🚀 Servidor: ${config.server.host}:${config.server.port}`);
   console.log(`🗄️  Banco de dados: ${config.database.mongodbUri ? 'Configurado' : 'Não configurado'}`);
   console.log(`🔐 Autenticação: ${config.auth.jwtSecret ? 'JWT Configurado' : 'Não configurado'}`);
-  console.log(`📧 Email: ${config.email.enabled ? 'Ativado' : 'Desativado'}`);
   console.log('==========================\n');
 };
 

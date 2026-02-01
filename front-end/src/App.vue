@@ -1,12 +1,5 @@
-<!-- src/App.vue -->
 <template>
   <MainLayout/>
-
-  <!--
-  div id="app">
-    <router-view />
-  </div>
-  -->
 </template>
 
 <script>

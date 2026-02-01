@@ -1,9 +1,7 @@
-// src/api/index.js
 import axios from 'axios';
 
 const api = axios.create({
-  //baseURL: process.env.API_BASE_URL+'/api/'|| 'http://localhost:3000',
-  baseURL: 'http://localhost:3000/api',
+  baseURL: process.env.API_BASE_URL ? `${process.env.API_BASE_URL}/api/` : 'http://localhost:3000/api',
   timeout: process.env.DEFAULT_TIMEOUT || 30000,
   headers: {
     'Content-Type': 'application/json',

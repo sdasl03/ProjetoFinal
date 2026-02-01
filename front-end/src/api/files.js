@@ -1,4 +1,3 @@
-// src/api/files.js
 import api from './index';
 
 export const filesApi = {
